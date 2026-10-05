@@ -126,8 +126,8 @@ export default function App() {
               <Home className="w-5 h-5" /> Trang chủ
             </button>
             <button 
-              onClick={() => setActiveTab('all')}
-              className="flex items-center gap-4 px-3 py-2 rounded-md hover:text-white transition"
+              onClick={() => { setActiveTab('library'); setSearchTerm(''); }}
+              className={`flex items-center gap-4 px-3 py-2 rounded-md transition ${activeTab === 'library' ? 'text-white bg-spotify-lightdark' : 'hover:text-white'}`}
             >
               <Library className="w-5 h-5" /> Thư viện
             </button>
@@ -233,13 +233,83 @@ export default function App() {
             </button>
           </div>
 
+          {/* TIÊU ĐỀ SECTION */}
           <h2 className="text-xl font-bold mb-4">
-            {activeTab === 'liked' ? 'Bài hát yêu thích của bạn' : 
-             activeTab === 'top' ? 'Top Bài Hát Nổi Bật' : 
-             activeTab === 'chill' ? 'Acoustic Thư Giãn' : 'Gợi ý cho bạn'}
+            {activeTab === 'library' ? 'Thư viện của bạn' :
+            activeTab === 'liked' ? 'Bài hát yêu thích của bạn' : 
+            activeTab === 'top' ? 'Top Bài Hát Nổi Bật' : 
+            activeTab === 'chill' ? 'Acoustic Thư Giãn' : 'Gợi ý cho bạn'}
           </h2>
 
-          {displayedSongs.length === 0 ? (
+          {/* GIAO DIỆN KHI VÀO TAB THƯ VIỆN */}
+          {activeTab === 'library' ? (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Thẻ Bài hát đã thích trong thư viện */}
+                <div 
+                  onClick={() => setActiveTab('liked')}
+                  className="p-5 rounded-lg bg-gradient-to-br from-indigo-800 to-purple-900 hover:from-indigo-700 hover:to-purple-800 transition cursor-pointer flex flex-col justify-between h-40 shadow-lg"
+                >
+                  <span className="text-xs uppercase font-semibold text-purple-200">Playlist</span>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">Bài hát đã thích</h3>
+                    <p className="text-sm text-purple-200 mt-1">{likedSongs.length} bài hát được lưu</p>
+                  </div>
+                </div>
+
+                {/* Thẻ Top bài hát */}
+                <div 
+                  onClick={() => setActiveTab('top')}
+                  className="p-5 rounded-lg bg-gradient-to-br from-orange-700 to-amber-800 hover:from-orange-600 hover:to-amber-700 transition cursor-pointer flex flex-col justify-between h-40 shadow-lg"
+                >
+                  <span className="text-xs uppercase font-semibold text-amber-200">Bộ sưu tập</span>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">Top Bài Hát Việt</h3>
+                    <p className="text-sm text-amber-200 mt-1">Các bài hát được nghe nhiều nhất</p>
+                  </div>
+                </div>
+
+                {/* Thẻ Acoustic Chill */}
+                <div 
+                  onClick={() => setActiveTab('chill')}
+                  className="p-5 rounded-lg bg-gradient-to-br from-cyan-800 to-blue-900 hover:from-cyan-700 hover:to-blue-800 transition cursor-pointer flex flex-col justify-between h-40 shadow-lg"
+                >
+                  <span className="text-xs uppercase font-semibold text-cyan-200">Tâm trạng & Thể loại</span>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">Acoustic Chill</h3>
+                    <p className="text-sm text-cyan-200 mt-1">Giai điệu thư giãn nhẹ nhàng</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold mb-3 text-zinc-300">Tất cả bài hát trong kho thư viện</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {songs.map((song) => {
+                    const isSelected = song.id === currentSong.id;
+                    return (
+                      <div 
+                        key={song.id}
+                        onClick={() => playSong(songs.findIndex(s => s.id === song.id))}
+                        className={`group p-4 rounded-lg bg-spotify-dark hover:bg-spotify-lightdark transition cursor-pointer relative ${isSelected ? 'border border-spotify-green' : ''}`}
+                      >
+                        <div className="relative mb-3 aspect-square rounded-md overflow-hidden bg-zinc-800">
+                          <img src={song.cover} alt={song.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                          <button 
+                            className={`absolute right-2 bottom-2 bg-spotify-green p-3 rounded-full text-black shadow-lg transition duration-200 ${isSelected && isPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0'}`}
+                          >
+                            {isSelected && isPlaying ? <Pause className="w-5 h-5 fill-black" /> : <Play className="w-5 h-5 fill-black ml-0.5" />}
+                          </button>
+                        </div>
+                        <h3 className="font-semibold text-sm truncate">{song.title}</h3>
+                        <p className="text-xs text-spotify-grey truncate mt-1">{song.artist}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          ) : displayedSongs.length === 0 ? (
             <p className="text-spotify-grey text-sm italic">Không có bài hát nào phù hợp.</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
