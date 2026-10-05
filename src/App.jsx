@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { initialSongs } from './mockData';
 import { 
   Play, Pause, SkipBack, SkipForward, Volume2, 
-  Search, Home, Library, Heart, Disc3 
+  Search, Home, Library, Heart, Disc3, 
+  Flame, Coffee, ListMusic 
 } from 'lucide-react';
 
 export default function App() {
@@ -135,25 +136,69 @@ export default function App() {
           <div className="h-[1px] bg-spotify-lightdark my-2"></div>
 
           <div className="flex-1 overflow-y-auto">
-            <span className="text-xs uppercase text-spotify-grey font-semibold tracking-wider px-3">Danh sách phát</span>
-            <div className="mt-2 flex flex-col gap-1 text-sm text-spotify-grey">
+            <span className="text-xs uppercase text-zinc-500 font-bold tracking-wider px-3">
+              Danh sách phát
+            </span>
+
+            <div className="mt-2 flex flex-col gap-1 text-sm">
+              {/* Top Bài Hát */}
               <button 
                 onClick={() => setActiveTab('top')}
-                className={`text-left px-3 py-2 rounded-md transition ${activeTab === 'top' ? 'text-spotify-green bg-spotify-lightdark font-semibold' : 'hover:text-white'}`}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition text-left group ${
+                  activeTab === 'top' 
+                    ? 'bg-zinc-800 text-white font-medium' 
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-900/60'
+                }`}
               >
-                🔥 Top Bài Hát Việt
+                <div className={`w-8 h-8 rounded flex items-center justify-center transition ${
+                  activeTab === 'top' 
+                    ? 'bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-md shadow-orange-500/20' 
+                    : 'bg-zinc-800 text-zinc-400 group-hover:text-white group-hover:bg-zinc-700'
+                }`}>
+                  <Flame className="w-4 h-4" />
+                </div>
+                <span className="truncate">Top Bài Hát Việt</span>
               </button>
+
+              {/* Acoustic Chill */}
               <button 
                 onClick={() => setActiveTab('chill')}
-                className={`text-left px-3 py-2 rounded-md transition ${activeTab === 'chill' ? 'text-spotify-green bg-spotify-lightdark font-semibold' : 'hover:text-white'}`}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition text-left group ${
+                  activeTab === 'chill' 
+                    ? 'bg-zinc-800 text-white font-medium' 
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-900/60'
+                }`}
               >
-                ☕ Acoustic Chill
+                <div className={`w-8 h-8 rounded flex items-center justify-center transition ${
+                  activeTab === 'chill' 
+                    ? 'bg-gradient-to-br from-cyan-600 to-blue-700 text-white shadow-md shadow-cyan-500/20' 
+                    : 'bg-zinc-800 text-zinc-400 group-hover:text-white group-hover:bg-zinc-700'
+                }`}>
+                  <Coffee className="w-4 h-4" />
+                </div>
+                <span className="truncate">Acoustic Chill</span>
               </button>
+
+              {/* Bài hát đã thích - Chuẩn giao diện ô vuông tím gradient của Spotify */}
               <button 
                 onClick={() => setActiveTab('liked')}
-                className={`text-left px-3 py-2 rounded-md transition ${activeTab === 'liked' ? 'text-spotify-green bg-spotify-lightdark font-semibold' : 'hover:text-white'}`}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition text-left group ${
+                  activeTab === 'liked' 
+                    ? 'bg-zinc-800 text-white font-medium' 
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-900/60'
+                }`}
               >
-                💚 Đã thích ({likedSongs.length})
+                <div className={`w-8 h-8 rounded flex items-center justify-center transition ${
+                  activeTab === 'liked'
+                    ? 'bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white shadow-md shadow-purple-500/20'
+                    : 'bg-gradient-to-br from-indigo-900/80 to-purple-900/80 text-zinc-300 group-hover:from-indigo-700 group-hover:to-purple-700 group-hover:text-white'
+                }`}>
+                  <Heart className="w-4 h-4 fill-current" />
+                </div>
+                <div className="flex flex-col truncate">
+                  <span className="truncate">Bài hát đã thích</span>
+                  <span className="text-[11px] text-zinc-500">{likedSongs.length} bài hát</span>
+                </div>
               </button>
             </div>
           </div>
