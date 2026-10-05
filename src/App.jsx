@@ -14,6 +14,9 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [volume, setVolume] = useState(0.8);
   const [likedSongs, setLikedSongs] = useState([]);
+  
+  // State quản lý tab / danh sách phát đang chọn
+  const [activeTab, setActiveTab] = useState('all'); // 'all', 'top', 'chill', 'liked'
 
   const audioRef = useRef(new Audio(songs[0].audioSrc));
   const currentSong = songs[currentSongIndex];
@@ -88,41 +91,75 @@ export default function App() {
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
-  const filteredSongs = songs.filter(s => 
-    s.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    s.artist.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Lọc theo Playlist bên sidebar & từ khóa tìm kiếm
+  const displayedSongs = songs.filter(song => {
+    const matchSearch = song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        song.artist.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (!matchSearch) return false;
+
+    if (activeTab === 'liked') return likedSongs.includes(song.id);
+    if (activeTab === 'chill') return song.id % 2 === 0; // Giả lập playlist chill
+    if (activeTab === 'top') return song.id % 2 !== 0;   // Giả lập playlist top hits
+    return true; // 'all'
+  });
 
   return (
     <div className="h-screen flex flex-col bg-black text-white overflow-hidden">
       <div className="flex-1 flex overflow-hidden p-2 gap-2">
+        {/* SIDEBAR BÊN TRÁI - ĐÃ CÓ TƯƠNG TÁC */}
         <aside className="w-64 bg-spotify-black rounded-lg flex flex-col gap-4 p-4 hidden md:flex">
-          <div className="flex items-center gap-2 px-2 text-spotify-green font-bold text-xl">
+          <div 
+            onClick={() => { setActiveTab('all'); setSearchTerm(''); }}
+            className="flex items-center gap-2 px-2 text-spotify-green font-bold text-xl cursor-pointer"
+          >
             <Disc3 className="w-8 h-8 animate-spin" style={{ animationDuration: '6s' }} />
             <span>Spotify Clone</span>
           </div>
 
-          <div className="flex flex-col gap-3 mt-4 text-spotify-grey font-medium text-sm">
-            <button className="flex items-center gap-4 hover:text-white transition">
-              <Home className="w-6 h-6" /> Trang chủ
+          <div className="flex flex-col gap-1 mt-2 text-spotify-grey font-medium text-sm">
+            <button 
+              onClick={() => { setActiveTab('all'); setSearchTerm(''); }}
+              className={`flex items-center gap-4 px-3 py-2 rounded-md transition ${activeTab === 'all' ? 'text-white bg-spotify-lightdark' : 'hover:text-white'}`}
+            >
+              <Home className="w-5 h-5" /> Trang chủ
             </button>
-            <button className="flex items-center gap-4 hover:text-white transition">
-              <Library className="w-6 h-6" /> Thư viện
+            <button 
+              onClick={() => setActiveTab('all')}
+              className="flex items-center gap-4 px-3 py-2 rounded-md hover:text-white transition"
+            >
+              <Library className="w-5 h-5" /> Thư viện
             </button>
           </div>
 
           <div className="h-[1px] bg-spotify-lightdark my-2"></div>
 
           <div className="flex-1 overflow-y-auto">
-            <span className="text-xs uppercase text-spotify-grey font-semibold tracking-wider">Danh sách phát</span>
-            <div className="mt-3 flex flex-col gap-2 text-sm text-spotify-grey">
-              <p className="hover:text-white cursor-pointer transition">Top Bài Hát Việt</p>
-              <p className="hover:text-white cursor-pointer transition">Acoustic Chill</p>
-              <p className="hover:text-white cursor-pointer transition">Đã thích ({likedSongs.length})</p>
+            <span className="text-xs uppercase text-spotify-grey font-semibold tracking-wider px-3">Danh sách phát</span>
+            <div className="mt-2 flex flex-col gap-1 text-sm text-spotify-grey">
+              <button 
+                onClick={() => setActiveTab('top')}
+                className={`text-left px-3 py-2 rounded-md transition ${activeTab === 'top' ? 'text-spotify-green bg-spotify-lightdark font-semibold' : 'hover:text-white'}`}
+              >
+                🔥 Top Bài Hát Việt
+              </button>
+              <button 
+                onClick={() => setActiveTab('chill')}
+                className={`text-left px-3 py-2 rounded-md transition ${activeTab === 'chill' ? 'text-spotify-green bg-spotify-lightdark font-semibold' : 'hover:text-white'}`}
+              >
+                ☕ Acoustic Chill
+              </button>
+              <button 
+                onClick={() => setActiveTab('liked')}
+                className={`text-left px-3 py-2 rounded-md transition ${activeTab === 'liked' ? 'text-spotify-green bg-spotify-lightdark font-semibold' : 'hover:text-white'}`}
+              >
+                💚 Đã thích ({likedSongs.length})
+              </button>
             </div>
           </div>
         </aside>
 
+        {/* NỘI DUNG CHÍNH */}
         <main className="flex-1 bg-gradient-to-b from-emerald-950 via-spotify-black to-spotify-black rounded-lg overflow-y-auto p-6">
           <div className="flex items-center justify-between mb-8">
             <div className="relative w-72">
@@ -151,33 +188,43 @@ export default function App() {
             </button>
           </div>
 
-          <h2 className="text-xl font-bold mb-4">Gợi ý cho bạn</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {filteredSongs.map((song) => {
-              const isSelected = song.id === currentSong.id;
-              return (
-                <div 
-                  key={song.id}
-                  onClick={() => playSong(songs.findIndex(s => s.id === song.id))}
-                  className={`group p-4 rounded-lg bg-spotify-dark hover:bg-spotify-lightdark transition cursor-pointer relative ${isSelected ? 'border border-spotify-green' : ''}`}
-                >
-                  <div className="relative mb-3 aspect-square rounded-md overflow-hidden bg-zinc-800">
-                    <img src={song.cover} alt={song.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                    <button 
-                      className={`absolute right-2 bottom-2 bg-spotify-green p-3 rounded-full text-black shadow-lg transition duration-200 ${isSelected && isPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0'}`}
-                    >
-                      {isSelected && isPlaying ? <Pause className="w-5 h-5 fill-black" /> : <Play className="w-5 h-5 fill-black ml-0.5" />}
-                    </button>
+          <h2 className="text-xl font-bold mb-4">
+            {activeTab === 'liked' ? 'Bài hát yêu thích của bạn' : 
+             activeTab === 'top' ? 'Top Bài Hát Nổi Bật' : 
+             activeTab === 'chill' ? 'Acoustic Thư Giãn' : 'Gợi ý cho bạn'}
+          </h2>
+
+          {displayedSongs.length === 0 ? (
+            <p className="text-spotify-grey text-sm italic">Không có bài hát nào phù hợp.</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {displayedSongs.map((song) => {
+                const isSelected = song.id === currentSong.id;
+                return (
+                  <div 
+                    key={song.id}
+                    onClick={() => playSong(songs.findIndex(s => s.id === song.id))}
+                    className={`group p-4 rounded-lg bg-spotify-dark hover:bg-spotify-lightdark transition cursor-pointer relative ${isSelected ? 'border border-spotify-green' : ''}`}
+                  >
+                    <div className="relative mb-3 aspect-square rounded-md overflow-hidden bg-zinc-800">
+                      <img src={song.cover} alt={song.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                      <button 
+                        className={`absolute right-2 bottom-2 bg-spotify-green p-3 rounded-full text-black shadow-lg transition duration-200 ${isSelected && isPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0'}`}
+                      >
+                        {isSelected && isPlaying ? <Pause className="w-5 h-5 fill-black" /> : <Play className="w-5 h-5 fill-black ml-0.5" />}
+                      </button>
+                    </div>
+                    <h3 className="font-semibold text-sm truncate">{song.title}</h3>
+                    <p className="text-xs text-spotify-grey truncate mt-1">{song.artist}</p>
                   </div>
-                  <h3 className="font-semibold text-sm truncate">{song.title}</h3>
-                  <p className="text-xs text-spotify-grey truncate mt-1">{song.artist}</p>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </main>
       </div>
 
+      {/* THANH PHÁT NHẠC (BOTTOM PLAYER) */}
       <footer className="h-20 bg-spotify-black border-t border-spotify-lightdark px-4 flex items-center justify-between">
         <div className="flex items-center gap-3 w-1/4 min-w-[160px]">
           <img src={currentSong.cover} alt={currentSong.title} className="w-14 h-14 rounded object-cover" />
